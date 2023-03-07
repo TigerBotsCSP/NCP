@@ -7,7 +7,7 @@ Nyahiito Control Panel
 </p>
 
 <p align="center">
-The Nyahiito Control Panel ignites the power of debugging autonomous, variables, and more. The panel, used on a computer connected to the same network as Nyahiito's radio, is easy to use and allows for smart testing of autonomous pathways, constants, pathway loading, consoles, and many more. Everything is slowly coming to completion. Check out Nyahiito's <pre>dev</pre> branch for information about the robot code for the control panel.
+The Nyahiito Control Panel ignites the power of debugging autonomous, variables, and more. The panel, used on a computer connected to the same network as Nyahiito's radio, is easy to use and allows for smart testing of autonomous pathways, constants, pathway loading, consoles, and many more. Everything is slowly coming to completion. Check out Nyahiito's dev branch for information about the robot code for the control panel.
 <br><br>
 <b>Server:</b> Completed<br>
 <b>Client Website:</b> WIP, basics completed<br>
