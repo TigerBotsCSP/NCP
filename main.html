@@ -39,10 +39,28 @@
             color: #fff;
             padding: 10px;
             overflow-y: scroll;
-            height: 100%;
-            margin-top: 20px;
+            height: 89%;
+            margin-top: 10px;
             box-sizing: border-box;
             font-size: 16px;
+            overflow-x: hidden;
+        }
+
+        /* Console Scrollbar */
+        pre::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        pre::-webkit-scrollbar-track {
+            background: #d1d1d1;
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background: #d1d1d1;
+        }
+
+        pre::-webkit-scrollbar-thumb:hover {
+            background: #d1d1d1;
         }
 
         /* Style for the main content area */
@@ -68,11 +86,6 @@
             margin-right: 10px;
             vertical-align: middle;
             border-radius: 100px;
-        }
-
-        /* Hide the scrollbar */
-        pre::-webkit-scrollbar {
-            display: none;
         }
 
         /* Style for the box */
@@ -143,9 +156,19 @@
 
 <body>
     <div class="sidebar">
-        <h1>Command Line</h1>
-        <pre id="output" contenteditable="false"></pre>
+        <div style="display: flex; align-items: center; justify-content: center;">
+            <img src="https://img.icons8.com/fluency/256/linux-terminal.png" alt="icon"
+                style="margin-right: 10px; width: 50px; height: 50px;">
+            <h1 style="text-align: center;">Terminal</h1>
+        </div>
+        <pre id="output" contenteditable="false" style="position: relative;">
+          <div style="position: absolute; bottom: 15px; display: flex; align-items: center; width: 100%;">
+            <input type="text" id="cmd_input" style="flex-grow: .85; margin-right: 0px;" />
+            <button onclick="ncp.exec();" class="mode-button" style="margin-right: 5px;">Send</button>
+          </div>
+        </pre>
     </div>
+
     <div class="content">
         <div class="navbar">
             <img src="https://avatars.githubusercontent.com/u/118773412?v=4" alt="Logo">
@@ -171,18 +194,32 @@
             <h1>Variables</h1>
             <div class="box">
                 <span>Arm Speed</span>
-                <input type="number" id="armspeed" oninput="ncp.edit_var('Arm Speed', this.value)" />
+                <input type="number" id="armspeed" value="0" oninput="ncp.edit_var('Arm Speed', this.value)" />
+            </div>
+            <div class="box">
+                <span>Arm In POV</span>
+                <input type="number" id="arminpov" value="0" oninput="ncp.edit_var('Arm In POV', this.value)" />
+            </div>
+            <div class="box">
+                <span>Arm Out POV</span>
+                <input type="number" id="armoutpov" value="0" oninput="ncp.edit_var('Arm Out POV', this.value)" />
+            </div>
+            <div class="box">
+                <span>Joystick Drift</span>
+                <input type="number" id="joydrift" value="0" oninput="ncp.edit_var('Joystick Drift', this.value)" />
             </div>
             <button class="mode-button" style="float: right;" onclick="ncp.publish();">Save</button>
         </div>
     </div>
     <script>
         // NCP Core
-
         var ncp = {
             Mode: "off",
             Variables: {
-                "Arm Speed": undefined
+                "Arm Speed": undefined,
+                "Arm In POV": undefined,
+                "Arm Out POV": undefined,
+                "Joystick Drift": undefined
             }
         };
 
@@ -196,7 +233,18 @@
             ncp.Variables[name] = Number(value);
         }
 
-        ncp.publish = function() {
+        ncp.exec = function () {
+            var cmd = document.querySelector("#cmd_input");
+            if (window.socket) {
+                window.socket.send(JSON.stringify({
+                    "Execute": cmd.value
+                }));
+
+                cmd.value = "";
+            }
+        }
+
+        ncp.publish = function () {
             if (window.socket) {
                 window.socket.send(JSON.stringify(ncp));
             }
@@ -214,14 +262,24 @@
         socket.addEventListener('message', (event) => {
             var json = JSON.parse(event.data);
 
-            // Put logs
-            var output = document.getElementById("output");
-            json.Logs.forEach(log => {
-                output.innerHTML += log + "<br>";
-            });
+            // Log Publish: Put logs
+            if (json.Log != null) {
+                var output = document.getElementById("output");
+                output.innerHTML += json.Log + "<br>";
+                return;
+            }
 
-            // Set variables
+            // Set variables on the core
+            ncp.edit_var("Arm Speed", json.Variables["Arm Speed"]);
+            ncp.edit_var("Arm In POV", json.Variables["Arm In POV"]);
+            ncp.edit_var("Arm Out POV", json.Variables["Arm Out POV"]);
+            ncp.edit_var("Joystick Drift", json.Variables["Joystick Drift"]);
+
+            // Set variables on the HTML
             document.querySelector("#armspeed").value = json.Variables["Arm Speed"];
+            document.querySelector("#arminpov").value = json.Variables["Arm In POV"];
+            document.querySelector("#armoutpov").value = json.Variables["Arm Out POV"];
+            document.querySelector("#joydrift").value = json.Variables["Joystick Drift"];
         });
     </script>
 </body>
