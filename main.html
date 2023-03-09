@@ -256,16 +256,19 @@
         </div>
         <div id="aps">
             <h1>Pathway System</h1>
+            <span id="apstime" style="padding: 9px; border: 1px solid #bebebe; border-radius: 20px;">⏱ 0:00.00</span>
             <button id="record" class="mode-button" onclick="ncp.aps(this.id);">Record</button>
-            <button id="stop" class="mode-button" style="background-color: rgb(230,230,230);" onclick="ncp.aps(this.id);">Stop</button>
+            <button id="stop" class="mode-button" style="background-color: rgb(230,230,230);"
+                onclick="ncp.aps(this.id);">Stop</button>
             <button id="reset" class="mode-button" onclick="ncp.aps(this.id);">Reset</button>
             <button id="play" class="mode-button" onclick="ncp.aps(this.id);">Play</button>
         </div>
         <div id="aps">
             <h1>Pathway Loading</h1>
             <div class="pathways">
-                <input id="joydrift" style="width: 300px;" oninput="ncp.edit_var('Joystick Drift', this.value)" />
-            <button class="mode-button" style="float: right;" onclick="ncp.publish();">Play</button>
+                <input id="pathfile" style="width: 300px;" oninput="ncp['Pathway Loading'] = this.value" />
+                <button class="mode-button" style="float: right;"
+                    onclick="ncp.publish();ncp['Pathway Loading']='';">Play</button>
             </div>
         </div>
         <div id="aps">
@@ -290,7 +293,8 @@
                 "Arm Out POV": undefined,
                 "Joystick Drift": undefined
             },
-            "Pathway System": "stop"
+            "Pathway System": "stop",
+            "Pathway Loading": ""
         };
 
         ncp.toggle_mode = function (mode) {
@@ -304,10 +308,28 @@
             ncp.Variables[name] = Number(value);
         }
 
-        ncp.aps = function(mode) {
+        window.apsTimer;
+        window.apsClock = 0;
+        ncp.aps = function (mode) {
+            var isNewMode = (ncp["Pathway System"] == mode) ? true : false;
+
             document.querySelector(`#${ncp["Pathway System"]}`).style["background-color"] = null;
             ncp["Pathway System"] = mode;
             document.querySelector(`#${ncp["Pathway System"]}`).style["background-color"] = "rgb(230,230,230)";
+
+            if (true) {
+                clearInterval(window.apsTimer);
+                if (mode == "reset") {
+                    document.querySelector("#apstime").innerHTML = "⏱ 0:00.00";
+                } else if (mode == "play" || mode == 'record') {
+                    mode == "play" && (apsClock = 0);
+                    apsTimer = setInterval(() => {
+                        apsClock += 10;
+                        document.querySelector("#apstime").innerHTML = "⏱ " + new Date(apsClock).toISOString().slice(15, -2);
+                    }, 10)
+                };
+            }
+
             ncp.publish();
         }
 
