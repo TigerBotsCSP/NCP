@@ -151,6 +151,50 @@
             margin-left: 10px;
             width: 100px;
         }
+
+        .pathways {
+            display: flex;
+            column-gap: 15px;
+        }
+
+        .pathway {
+            background-color: #ccc;
+            color: #333;
+            border: none;
+            padding: 6px 15px;
+            width: 205px;
+            height: 50px;
+            font-size: 27px;
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ccc;
+            transition: .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .apriltags {
+            display: flex;
+            column-gap: 15px;
+        }
+
+        .apriltag {
+            background-color: #ccc;
+            color: #333;
+            border: none;
+            padding: 6px 15px;
+            width: 100px;
+            height: 50px;
+            font-size: 25px;
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ccc;
+            transition: .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 
@@ -163,8 +207,8 @@
         </div>
         <pre id="output" contenteditable="false" style="position: relative;">
           <div style="position: absolute; bottom: 15px; display: flex; align-items: center; width: 100%;">
-            <input type="text" id="cmd_input" style="flex-grow: .85; margin-right: 0px;" />
-            <button onclick="ncp.exec();" class="mode-button" style="margin-right: 5px;">Send</button>
+            <input type="text" id="cmd_input" style="flex-grow: .85; margin-right: 0px; color: white; border: 1px solid #676767; background-color: #333;" />
+            <button onclick="ncp.exec();" class="mode-button" style="margin-right: 5px; color: white; border: 1px solid #676767; background-color: #333;">Send</button>
           </div>
         </pre>
     </div>
@@ -210,6 +254,31 @@
             </div>
             <button class="mode-button" style="float: right;" onclick="ncp.publish();">Save</button>
         </div>
+        <div id="aps">
+            <h1>Pathway System</h1>
+            <button id="record" class="mode-button" onclick="ncp.aps(this.id);">Record</button>
+            <button id="stop" class="mode-button" style="background-color: rgb(230,230,230);" onclick="ncp.aps(this.id);">Stop</button>
+            <button id="reset" class="mode-button" onclick="ncp.aps(this.id);">Reset</button>
+            <button id="play" class="mode-button" onclick="ncp.aps(this.id);">Play</button>
+        </div>
+        <div id="aps">
+            <h1>Pathway Loading</h1>
+            <div class="pathways">
+                <input id="joydrift" style="width: 300px;" oninput="ncp.edit_var('Joystick Drift', this.value)" />
+            <button class="mode-button" style="float: right;" onclick="ncp.publish();">Play</button>
+            </div>
+        </div>
+        <div id="aps">
+            <h1>AprilTags</h1>
+            <div class="apriltags">
+                <div class="apriltag" id="tag_1" style="border: 1px solid rgb(207, 34, 34);">Tag 1</div>
+                <div class="apriltag" id="tag_2" style="border: 1px solid rgb(207, 34, 34);">Tag 2</div>
+                <div class="apriltag" id="tag_3" style="border: 1px solid rgb(207, 34, 34);">Tag 3</div>
+                <div class="apriltag" id="tag_6" style="border: 1px solid rgb(34, 66, 207);">Tag 6</div>
+                <div class="apriltag" id="tag_7" style="border: 1px solid rgb(34, 66, 207);">Tag 7</div>
+                <div class="apriltag" id="tag_8" style="border: 1px solid rgb(34, 66, 207);">Tag 8</div>
+            </div>
+        </div>
     </div>
     <script>
         // NCP Core
@@ -220,17 +289,26 @@
                 "Arm In POV": undefined,
                 "Arm Out POV": undefined,
                 "Joystick Drift": undefined
-            }
+            },
+            "Pathway System": "stop"
         };
 
         ncp.toggle_mode = function (mode) {
             document.querySelector(`#${ncp.Mode}`).classList.remove("mode-button-select");
             ncp.Mode = mode;
             document.querySelector(`#${ncp.Mode}`).classList.add("mode-button-select");
+            ncp.publish();
         }
 
         ncp.edit_var = function (name, value) {
             ncp.Variables[name] = Number(value);
+        }
+
+        ncp.aps = function(mode) {
+            document.querySelector(`#${ncp["Pathway System"]}`).style["background-color"] = null;
+            ncp["Pathway System"] = mode;
+            document.querySelector(`#${ncp["Pathway System"]}`).style["background-color"] = "rgb(230,230,230)";
+            ncp.publish();
         }
 
         ncp.exec = function () {
@@ -256,7 +334,8 @@
         window.socket = new WebSocket('ws://localhost:9072/v1/panel');
 
         socket.addEventListener('open', (event) => {
-            console.log('WebSocket connection established');
+            var output = document.getElementById("output");
+            output.innerHTML += "<b style='color: green'>✔ Connected to server.</b><br>";
         });
 
         socket.addEventListener('message', (event) => {
@@ -269,11 +348,25 @@
                 return;
             }
 
+            // Set mode
+            ncp.toggle_mode(json.Mode);
+
             // Set variables on the core
             ncp.edit_var("Arm Speed", json.Variables["Arm Speed"]);
             ncp.edit_var("Arm In POV", json.Variables["Arm In POV"]);
             ncp.edit_var("Arm Out POV", json.Variables["Arm Out POV"]);
             ncp.edit_var("Joystick Drift", json.Variables["Joystick Drift"]);
+
+            // Set detected AprilTags
+            var tags = [1, 2, 3, 6, 7, 8];
+
+            for (let i = 0; i < tags.length; i++) {
+                if (!json.Tags.includes(tags[i])) {
+                    document.querySelector("#tag_" + tags[i]).style["background-color"] = null;
+                } else {
+                    document.querySelector("#tag_" + tags[i]).style["background-color"] = "rgb(230,230,230)";
+                }
+            }
 
             // Set variables on the HTML
             document.querySelector("#armspeed").value = json.Variables["Arm Speed"];
