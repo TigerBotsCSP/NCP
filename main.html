@@ -222,7 +222,7 @@
             <h1>Home</h1>
             <div class="box">
                 <span>Battery</span>
-                <span>12.00V</span>
+                <span id="battery">12.00V</span>
             </div>
             <div class="box">
                 <span>Mode</span>
@@ -372,6 +372,9 @@
 
             // Set mode
             ncp.toggle_mode(json.Mode);
+
+            // Set voltage
+            document.querySelector("#battery").innerHTML = json.Voltage + "V";
 
             // Set variables on the core
             ncp.edit_var("Arm Speed", json.Variables["Arm Speed"]);
