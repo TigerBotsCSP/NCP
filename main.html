@@ -33,6 +33,27 @@
             box-sizing: border-box;
         }
 
+        .loader {
+            border: 4px solid #282828;
+            /* Light grey */
+            border-top: 4px solid #c5320d;
+            /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         /* Style for the command line output */
         pre {
             background-color: black;
@@ -48,19 +69,19 @@
 
         /* Console Scrollbar */
         pre::-webkit-scrollbar {
-            width: 3px;
+            width: 5px;
         }
 
         pre::-webkit-scrollbar-track {
-            background: #d1d1d1;
+            background: #7b7b7b;
         }
 
         pre::-webkit-scrollbar-thumb {
-            background: #d1d1d1;
+            background: #4e4e4e;
         }
 
         pre::-webkit-scrollbar-thumb:hover {
-            background: #d1d1d1;
+            background: #2c2c2c;
         }
 
         /* Style for the main content area */
@@ -201,86 +222,104 @@
 <body>
     <div class="sidebar">
         <div style="display: flex; align-items: center; justify-content: center;">
-            <img src="https://img.icons8.com/fluency/256/linux-terminal.png" alt="icon"
+            <img onclick='document.querySelector("#output").innerHTML = ""'
+                src="https://img.icons8.com/fluency/256/linux-terminal.png" alt="icon"
                 style="margin-right: 10px; width: 50px; height: 50px;">
             <h1 style="text-align: center;">Terminal</h1>
         </div>
         <pre id="output" contenteditable="false" style="position: relative;">
-          <div style="position: absolute; bottom: 15px; display: flex; align-items: center; width: 100%;">
-            <input type="text" id="cmd_input" style="flex-grow: .85; margin-right: 0px; color: white; border: 1px solid #676767; background-color: #333;" />
-            <button onclick="ncp.exec();" class="mode-button" style="margin-right: 5px; color: white; border: 1px solid #676767; background-color: #333;">Send</button>
-          </div>
         </pre>
+        <div style="position: sticky; bottom: 55px; display: flex; align-items: center; width: 100%; margin-left: 5px;">
+            <input type="text" id="cmd_input"
+                style="flex-grow: .85; margin-right: 0px; color: white; border: 1px solid #676767; background-color: #333;">
+            <button onclick="ncp.exec();" class="mode-button"
+                style="margin-right: 5px; color: white; border: 1px solid #676767; background-color: #333;">Send</button>
+        </div>
     </div>
 
     <div class="content">
         <div class="navbar">
-            <img src="https://avatars.githubusercontent.com/u/118773412?v=4" alt="Logo">
+            <img src="file:///c:/users/admin/downloads/ncp.png" alt="Logo">
             <h1>Control Panel</h1>
         </div>
-        <div id="home">
-            <h1>Home</h1>
-            <div class="box">
-                <span>Battery</span>
-                <span id="battery">12.00V</span>
-            </div>
-            <div class="box">
-                <span>Mode</span>
-                <div class="buttons">
-                    <button id="off" class="mode-button mode-button-select"
-                        onclick="ncp.toggle_mode(this.id)">Off</button>
-                    <button id="teleop" class="mode-button" onclick="ncp.toggle_mode(this.id)">Teleoperated</button>
-                    <button id="auto" class="mode-button" onclick="ncp.toggle_mode(this.id)">Autonomous</button>
+        <br>
+        <div id="ncp_loader" style="display: flex; justify-content: center; align-items: center;">
+            <div class="loader"></div> <span style="font-size: 20px; margin-left: 10px">Connecting...</span>
+        </div>
+        <main style="display: none;">
+            <div id="home">
+                <h1>Home</h1>
+                <div class="box">
+                    <span>Battery</span>
+                    <span id="battery">12.00V</span>
+                </div>
+                <div class="box">
+                    <span>Mode</span>
+                    <div class="buttons">
+                        <button id="off" class="mode-button mode-button-select"
+                            onclick="ncp.toggle_mode(this.id)">Off</button>
+                        <button id="teleop" class="mode-button" onclick="ncp.toggle_mode(this.id)">Teleoperated</button>
+                        <button id="auto" class="mode-button" onclick="ncp.toggle_mode(this.id)">Autonomous</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="variables">
-            <h1>Variables</h1>
-            <div class="box">
-                <span>Arm Speed</span>
-                <input type="number" id="armspeed" value="0" oninput="ncp.edit_var('Arm Speed', this.value)" />
+            <div id="variables">
+                <h1>Variables</h1>
+                <div class="box">
+                    <span>Arm Speed</span>
+                    <input type="number" id="armspeed" value="0" oninput="ncp.edit_var('Arm Speed', this.value)" />
+                </div>
+                <div class="box">
+                    <span>Arm In POV</span>
+                    <input type="number" id="arminpov" value="0" oninput="ncp.edit_var('Arm In POV', this.value)" />
+                </div>
+                <div class="box">
+                    <span>Arm Out POV</span>
+                    <input type="number" id="armoutpov" value="0" oninput="ncp.edit_var('Arm Out POV', this.value)" />
+                </div>
+                <div class="box">
+                    <span>Joystick Drift</span>
+                    <input type="number" id="joydrift" value="0" oninput="ncp.edit_var('Joystick Drift', this.value)" />
+                </div>
+                <div class="box">
+                    <span>Pathway Load Delay</span>
+                    <input type="number" id="pathdelay" value="0"
+                        oninput="ncp.edit_var('Pathway Load Delay', this.value)" />
+                </div>
+                <button class="mode-button" style="float: right;" onclick="ncp.publish();">Save</button>
             </div>
-            <div class="box">
-                <span>Arm In POV</span>
-                <input type="number" id="arminpov" value="0" oninput="ncp.edit_var('Arm In POV', this.value)" />
+            <div id="aps">
+                <h1>Pathway System</h1>
+                <span id="apstime" style="padding: 9px; border: 1px solid #bebebe; border-radius: 20px;">⏱
+                    0:00.00</span>
+                <button id="record" class="mode-button" onclick="ncp.aps(this.id);">Record</button>
+                <button id="stop" class="mode-button" style="background-color: rgb(230,230,230);"
+                    onclick="ncp.aps(this.id);">Stop</button>
+                <button id="reset" class="mode-button" onclick="ncp.aps(this.id);">Reset</button>
+                <button id="play" class="mode-button" onclick="ncp.aps(this.id);">Play</button>
+                <button id="save" class="mode-button" onclick="ncp.aps(this.id);">Save</button>
             </div>
-            <div class="box">
-                <span>Arm Out POV</span>
-                <input type="number" id="armoutpov" value="0" oninput="ncp.edit_var('Arm Out POV', this.value)" />
+            <div id="aps">
+                <h1>Pathway Loading</h1>
+                <div class="pathways">
+                    <input id="pathfile" style="width: 300px; margin-left: 0px;"
+                        oninput="ncp['Pathway Loading'] = this.value" />
+                    <button class="mode-button" style="margin-left: -5px;"
+                        onclick="ncp.publish();ncp['Pathway Loading']='';">Play</button>
+                </div>
             </div>
-            <div class="box">
-                <span>Joystick Drift</span>
-                <input type="number" id="joydrift" value="0" oninput="ncp.edit_var('Joystick Drift', this.value)" />
+            <div id="aps">
+                <h1>AprilTags</h1>
+                <div class="apriltags">
+                    <div class="apriltag" id="tag_1" style="border: 1px solid rgb(207, 34, 34);">Tag 1</div>
+                    <div class="apriltag" id="tag_2" style="border: 1px solid rgb(207, 34, 34);">Tag 2</div>
+                    <div class="apriltag" id="tag_3" style="border: 1px solid rgb(207, 34, 34);">Tag 3</div>
+                    <div class="apriltag" id="tag_6" style="border: 1px solid rgb(34, 66, 207);">Tag 6</div>
+                    <div class="apriltag" id="tag_7" style="border: 1px solid rgb(34, 66, 207);">Tag 7</div>
+                    <div class="apriltag" id="tag_8" style="border: 1px solid rgb(34, 66, 207);">Tag 8</div>
+                </div>
             </div>
-            <button class="mode-button" style="float: right;" onclick="ncp.publish();">Save</button>
-        </div>
-        <div id="aps">
-            <h1>Pathway System</h1>
-            <span id="apstime" style="padding: 9px; border: 1px solid #bebebe; border-radius: 20px;">⏱ 0:00.00</span>
-            <button id="record" class="mode-button" onclick="ncp.aps(this.id);">Record</button>
-            <button id="stop" class="mode-button" style="background-color: rgb(230,230,230);"
-                onclick="ncp.aps(this.id);">Stop</button>
-            <button id="reset" class="mode-button" onclick="ncp.aps(this.id);">Reset</button>
-            <button id="play" class="mode-button" onclick="ncp.aps(this.id);">Play</button>
-        </div>
-        <div id="aps">
-            <h1>Pathway Loading</h1>
-            <div class="pathways">
-                <input id="pathfile" style="width: 300px; margin-left: 0px;" oninput="ncp['Pathway Loading'] = this.value" />
-                <button class="mode-button" style="margin-left: -5px;" onclick="ncp.publish();ncp['Pathway Loading']='';">Play</button>
-            </div>
-        </div>
-        <div id="aps">
-            <h1>AprilTags</h1>
-            <div class="apriltags">
-                <div class="apriltag" id="tag_1" style="border: 1px solid rgb(207, 34, 34);">Tag 1</div>
-                <div class="apriltag" id="tag_2" style="border: 1px solid rgb(207, 34, 34);">Tag 2</div>
-                <div class="apriltag" id="tag_3" style="border: 1px solid rgb(207, 34, 34);">Tag 3</div>
-                <div class="apriltag" id="tag_6" style="border: 1px solid rgb(34, 66, 207);">Tag 6</div>
-                <div class="apriltag" id="tag_7" style="border: 1px solid rgb(34, 66, 207);">Tag 7</div>
-                <div class="apriltag" id="tag_8" style="border: 1px solid rgb(34, 66, 207);">Tag 8</div>
-            </div>
-        </div>
+        </main>
     </div>
     <script>
         // NCP Core
@@ -316,18 +355,16 @@
             ncp["Pathway System"] = mode;
             document.querySelector(`#${ncp["Pathway System"]}`).style["background-color"] = "rgb(230,230,230)";
 
-            if (true) {
-                clearInterval(window.apsTimer);
-                if (mode == "reset") {
-                    document.querySelector("#apstime").innerHTML = "⏱ 0:00.00";
-                } else if (mode == "play" || mode == 'record') {
-                    mode == "play" && (apsClock = 0);
-                    apsTimer = setInterval(() => {
-                        apsClock += 10;
-                        document.querySelector("#apstime").innerHTML = "⏱ " + new Date(apsClock).toISOString().slice(15, -2);
-                    }, 10)
-                };
-            }
+            clearInterval(window.apsTimer);
+            if (mode == "reset") {
+                document.querySelector("#apstime").innerHTML = "⏱ 0:00.00";
+            } else if (mode == "play" || mode == 'record') {
+                mode == "play" && (apsClock = 0);
+                apsTimer = setInterval(() => {
+                    apsClock += 10;
+                    document.querySelector("#apstime").innerHTML = "⏱ " + new Date(apsClock).toISOString().slice(15, -2);
+                }, 10)
+            };
 
             ncp.publish();
         }
@@ -355,8 +392,8 @@
         window.socket = new WebSocket('ws://localhost:9072/v1/panel');
 
         socket.addEventListener('open', (event) => {
-            var output = document.getElementById("output");
-            output.innerHTML += "<b style='color: green'>✔ Connected to server.</b><br>";
+            document.getElementById("ncp_loader").style.display = "none";
+            document.getElementsByTagName("main")[0].style.display = "initial";
         });
 
         socket.addEventListener('message', (event) => {
@@ -373,13 +410,14 @@
             ncp.toggle_mode(json.Mode);
 
             // Set voltage
-            document.querySelector("#battery").innerHTML = json.Voltage + "V";
+            document.querySelector("#battery").innerHTML = parseFloat(json.Voltage).toFixed(2) + "V";
 
             // Set variables on the core
             ncp.edit_var("Arm Speed", json.Variables["Arm Speed"]);
             ncp.edit_var("Arm In POV", json.Variables["Arm In POV"]);
             ncp.edit_var("Arm Out POV", json.Variables["Arm Out POV"]);
             ncp.edit_var("Joystick Drift", json.Variables["Joystick Drift"]);
+            ncp.edit_var("Pathway Load Delay", json.Variables["Pathway Load Delay"]);
 
             // Set detected AprilTags
             var tags = [1, 2, 3, 6, 7, 8];
@@ -397,6 +435,7 @@
             document.querySelector("#arminpov").value = json.Variables["Arm In POV"];
             document.querySelector("#armoutpov").value = json.Variables["Arm Out POV"];
             document.querySelector("#joydrift").value = json.Variables["Joystick Drift"];
+            document.querySelector("#pathdelay").value = json.Variables["Pathway Load Delay"];
         });
     </script>
 </body>
