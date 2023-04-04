@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ncp Lite</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'segoe ui';
+            background-color: #1f1f1f;
+            color: white;
+        }
+
+        /* Styles for the navbar */
+        nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50px;
+            background-color: #292828;
+            color: white;
+        }
+
+        /* Styles for the status text */
+        #status {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 30px;
+            background-color: black;
+            color: white;
+            font-size: 26px;
+            margin-bottom: 10px;
+            border: 1px solid #2e2e2e;
+            padding: 3px 25px 3px 25px;
+            border-radius: 25px;
+        }
+
+        /* Styles for the buttons */
+        button {
+            font-size: 16px;
+            padding: 10px;
+            margin: 5px;
+            background-color: #292929;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border: 1px solid #2e2e2e;
+        }
+
+        button:hover {
+            background-color: #444;
+        }
+
+        /* Styles for the timer */
+        #timer {
+            font-size: 24px;
+            margin: 5px 0;
+            border: 1px solid #2e2e2e;
+            padding: 0 10px 0 10px;
+            border-radius: 25px;
+        }
+
+        /* Styles for the loading section */
+        #load {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+
+        }
+
+        #load label {
+            font-size: 16px;
+            margin-bottom: 5px;
+
+        }
+
+        #load input[type="text"] {
+            font-size: 16px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #292929;
+            color: white;
+            border: none;
+            border: 1px solid #2e2e2e;
+        }
+
+        #load input[type="text"]:focus {
+            outline: none;
+        }
+
+        /* Styles for the container */
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <img id="i" style="width:30px;height:30px; margin-right: 7px;"
+            src="https://cdn.discordapp.com/attachments/736359303744585821/1092853976992596098/YotsubaPray.png">
+        <h1>NCP Lite</h1>
+    </nav>
+
+    <div class="container">
+        <div id="status">Ready</div>
+        <div id="timer">0:00.0</div>
+        <div>
+            <button id="recordBtn">Record</button>
+            <button id="stopBtn">Stop</button>
+            <button id="resetBtn">Reset</button>
+            <button id="playBtn">Save</button>
+            <button id="reverseBtn">Reverse</button>
+        </div>
+
+        <div id="load">
+            <label for="fileInput">File:</label>
+            <input type="text" id="fileInput">
+            <button id="loadBtn" onclick='lite("Load", document.querySelector("#fileInput").value);'>Load</button>
+        </div>
+        <label for="fileInput">Console:</label>
+        <pre id="c" style="border: 1px solid #292828; padding: 25px;"></pre>
+    </div>
+    <script>
+        // Socket Handler
+        window.socket = new WebSocket('ws://localhost:9072/v1/panel');
+
+        // Global send
+        window.lite = function (a, d) {
+            socket.send(JSON.stringify({ "Action": a, "Data": d }));
+        }
+
+        socket.addEventListener('open', (event) => {
+            document.querySelector("#c").innerHTML += "Connected to Nyahiito (lightly)<br>";
+        });
+
+        socket.addEventListener('message', (event) => {
+            var json = JSON.parse(event.data);
+
+            // Log Publish: Put logs
+            if (json.Action == "Log") {
+                document.querySelector("#c").innerHTML += json.Data + "<br>";
+            } else {
+                document.querySelector("#status").innerText = json.Data;
+            }
+        });
+    </script>
+    <script>
+        // Define variables
+        let startTime;
+        let elapsedTime = 0;
+        let timerInterval;
+
+        // Add event listeners to buttons
+        document.getElementById("recordBtn").addEventListener("click", function () {
+            document.getElementById("status").innerHTML = "Recording...";
+            startTime = new Date().getTime() - elapsedTime;
+            timerInterval = setInterval(function () {
+                elapsedTime = new Date().getTime() - startTime;
+                document.getElementById("timer").innerHTML = formatTime(elapsedTime);
+            }, 10);
+
+            lite("Record", "");
+        });
+
+        document.getElementById("stopBtn").addEventListener("click", function () {
+            document.getElementById("status").innerHTML = "Stopped";
+            clearInterval(timerInterval);
+            lite("Stop", "");
+        });
+
+        document.getElementById("resetBtn").addEventListener("click", function () {
+            document.getElementById("status").innerHTML = "Ready";
+            clearInterval(timerInterval);
+            elapsedTime = 0;
+            document.getElementById("timer").innerHTML = formatTime(elapsedTime);
+            lite("Reset", "");
+        });
+
+        document.getElementById("playBtn").addEventListener("click", function () {
+            document.getElementById("status").innerHTML = "Saving...";
+            lite("Save", "");
+        });
+
+        document.getElementById("reverseBtn").addEventListener("click", function () {
+            document.getElementById("status").innerHTML = "Reversing...";
+            lite("Reverse", "");
+        });
+
+        // Function to format the time in mm:ss.s format
+        function formatTime(time) {
+            let minutes = Math.floor(time / 60000);
+            let seconds = Math.floor((time % 60000) / 1000);
+            let milliseconds = Math.floor((time % 1000) / 100);
+            return minutes + ":" + (seconds < 10 ? "0" : "") + seconds + "." + milliseconds;
+        }
+    </script>
+</body>
+
+</html>
