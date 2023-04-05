@@ -149,7 +149,7 @@
             // Log Publish: Put logs
             if (json.Action == "Log") {
                 document.querySelector("#c").innerHTML += json.Data + "<br>";
-            } else {
+            } else if (json.Action == "BigLog") {
                 document.querySelector("#status").innerText = json.Data;
             }
         });
